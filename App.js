@@ -1,49 +1,68 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
+import React from 'react';
+import { AppRegistry, StyleSheet, FlatList, ActivityIndicator, Text, View, Image } from 'react-native';
 
-import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
-
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
+const styles = StyleSheet.create({
+  bigblue: {
+    color: 'blue',
+    fontWeight: 'bold',
+    fontSize: 24,
+  },
+  gray: {
+    color: 'gray',
+  },
 });
 
-type Props = {};
-export default class App extends Component<Props> {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
+export default class FetchExample extends React.Component {
+
+  constructor(props){
+    super(props);
+    this.state ={ isLoading: true}
+  }
+
+  componentDidMount(){
+    return fetch('https://airbnb-api.now.sh/api/room?city=paris')
+      .then((response) => response.json())
+      .then((responseJson) => {
+
+        this.setState({
+          isLoading: false,
+          dataSource: responseJson.rooms,
+        }, function(){
+
+        });
+
+      })
+      .catch((error) =>{
+        console.error(error);
+      });
+  }
+
+
+
+  render(){
+
+    if(this.state.isLoading){
+      return(
+        <View style={{flex: 1, padding: 20}}>
+          <ActivityIndicator/>
+        </View>
+      )
+    }
+
+    return(
+      <View style={{flex: 1, paddingTop:64}}>
+        <FlatList
+          data={this.state.dataSource}
+          renderItem={({item}) => 
+          <View>
+            <Text style={styles.bigblue}>{item.title}</Text>
+            <Text style={styles.gray}>{item.description}</Text>
+            <Image source={ { uri: item.photos[0] }} style={{flex: 1, height: 110}}/>
+          </View>
+          }
+          keyExtractor={({id}, index) => id}
+        />
       </View>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
